@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Document</title>
+</head>
+<body>
+  <div class="wrapper">
+    <select id="from"></select>
+    <input type="text" class="in" placeholder="Введите сумму" />
+    <select id="into"></select>
+    <button>Calculate</button>
+    <h2 class="showResult"></h2>
+  </div>
+</body>
+
+<script>
+ const newArr = [];
+ const arrOfMoneys = [];
+ fetch("https://old.bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json")
+ .then(res => res.json())
+ .then(data => {
+   const selectFrom = document.querySelector("#from");
+   const selectInto = document.querySelector("#into");
+   data.forEach(item => {
+     newArr.push(item);
+     const option = document.createElement("option");
+     option.innerText = item.txt;
+     selectFrom.append(option);
+     const optionInto = document.createElement("option");
+     optionInto.innerText = item.txt;
+     selectInto.append(optionInto);
+   });
+   let moneyFetch = fetch("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?date=20191009&json")
+   .then(res => res.json()).then(data => {
+     data.forEach(item => {
+       arrOfMoneys.push(item);
+     });
+   })
+ })
+ .catch(err => alert(err));
+ const $button = document.querySelector("button");
+ $button.addEventListener("click", e => {
+   e.preventDefault();
+   const $input = document.querySelector(".in");
+   if (isNaN($input.value) || $input.value === "") {
+     alert("Eblan");
+   } else {
+     let selectFrom = document.querySelector("#from").value;
+     selectFrom = arrOfMoneys.find(item => {
+       if (selectFrom === item.txt) {
+         return item;
+       }
+     });
+     let selectInto = document.querySelector("#into").value;
+     selectInto = arrOfMoneys.find(item => {
+       if (selectInto === item.txt) {
+         return item;
+       }
+     });
+     const calculate = (selectFrom.rate * $input.value) / selectInto.rate;
+     const span = document.createElement("span");
+     const result = document.querySelector(".showResult");
+     result.innerHTML = "";
+     result.append(span);
+     span.innerText = calculate.toFixed(2) + ' - ' + selectInto.txt;
+     $input.value = "";
+   }
+ });
+</script>
+</html>
